@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns="http://www.springframework.org/schema/beans"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans-3.2.xsd">
+
+    <bean id="redisSessionManager" class="com.pai.base.session.RedisSessionManager">
+        <!-- 这里根据需要使用不同的redisManager -->
+        <!--<property name="redisManager" ref="simpleRedisManager"/>-->
+        <!--<property name="redisManager" ref="sentinelRedisManager"/>-->
+        <property name="redisManager" ref="clusterRedisManager"/>
+        <property name="prefix" value="${session.prefix}"/>
+    </bean>
+
+    <!--redis 连接池配置  公共-->
+    <bean id="jedisPoolConfig" class="redis.clients.jedis.JedisPoolConfig">
+        <property name="maxTotal" value="${config.redis.pool.maxActive}"/>
+        <!-- 控制一个pool最多有多少个状态为idle的jedis实例-->
+        <property name="maxIdle" value="${config.redis.pool.maxIdle}"/>
+        <!-- 控制一个pool最少有多少个状态为idle的jedis实例-->
+        <property name="minIdle" value="${config.redis.pool.minIdle}"/>
+        <!-- 当池内没有返回对象时，最大等待时间 -->
+        <property name="maxWaitMillis" value="${config.redis.pool.maxWait}"/>
+        <!-- 在borrow一个jedis实例时，是否提前进行alidate操作；如果为true，则得到的jedis实例均是可用的 -->
+        <property name="testOnBorrow" value="${config.redis.pool.testOnBorrow}"/>
+    </bean>
+
+    <!-- 单机Redis管理器 -->
+    <!--<bean id="simpleRedisManager" class="com.pai.base.redis.SimpleRedisManager">
+        <property name="jedisPool" ref="jedisPool"/>
+    </bean>
+
+    <bean id="jedisPool" class="redis.clients.jedis.JedisPool">
+        <constructor-arg index="0" name="poolConfig" ref="jedisPoolConfig"/>
+        <constructor-arg index="1" name="host" value="${config.redis.ip}"/>
+        <constructor-arg index="2" name="port" value="${config.redis.port}"/>
+        <constructor-arg index="3" name="timeout" value="${config.redis.timeout}"/>
+        <constructor-arg index="4" name="password" value="${config.redis.password}"/>
+    </bean>-->
+
+    <!-- 主从Redis管理器 -->
+    <!--<bean id="masterSlaveRedisManager" class="com.pai.base.redis.MasterSlaveRedisManager">
+        <property name="jedisSentinelPool" ref="jedisSentinelPool"/>
+    </bean>
+
+    <bean id="jedisSentinelPool" class="redis.clients.jedis.JedisSentinelPool">
+        <constructor-arg index="0" value="${redis.master.name}"/>
+        <constructor-arg index="1">
+            <set>
+                <value>${redis.master1.hostname}:${redis.master1.port}</value>
+                <value>${redis.master2.hostname}:${redis.master2.port}</value>
+                <value>${redis.slave1.hostname}:${redis.slave1.port}</value>
+                <value>${redis.slave2.hostname}:${redis.slave2.port}</value>
+            </set>
+        </constructor-arg>
+        <constructor-arg index="2" ref="jedisPoolConfig"/>
+        <constructor-arg index="3" name="timeout" value="${config.redis.timeout}"/>
+        <constructor-arg index="4" name="password" value="${config.redis.password}"/>
+    </bean>-->
+
+    <!-- 集群Redis管理器 -->
+    <bean id="clusterRedisManager" class="com.pai.base.redis.ClusterRedisManager">
+        <property name="jedisCluster" ref="jedisCluster"/>
+        <property name="expire" value="${config.redis.expire}"/>
+    </bean>
+
+    <bean id="jedisCluster" class="redis.clients.jedis.JedisCluster">
+        <constructor-arg index="0">
+            <set>
+                <bean class="redis.clients.jedis.HostAndPort">
+                    <constructor-arg index="0" value="${redis.cluster.hostname1}"/>
+                    <constructor-arg index="1" value="${redis.cluster.port1}"/>
+                </bean>
+                <bean class="redis.clients.jedis.HostAndPort">
+                    <constructor-arg index="0" value="${redis.cluster.hostname2}"/>
+                    <constructor-arg index="1" value="${redis.cluster.port2}"/>
+                </bean>
+                <bean class="redis.clients.jedis.HostAndPort">
+                    <constructor-arg index="0" value="${redis.cluster.hostname3}"/>
+                    <constructor-arg index="1" value="${redis.cluster.port3}"/>
+                </bean>
+                <bean class="redis.clients.jedis.HostAndPort">
+                    <constructor-arg index="0" value="${redis.cluster.hostname4}"/>
+                    <constructor-arg index="1" value="${redis.cluster.port4}"/>
+                </bean>
+                <bean class="redis.clients.jedis.HostAndPort">
+                    <constructor-arg index="0" value="${redis.cluster.hostname5}"/>
+                    <constructor-arg index="1" value="${redis.cluster.port5}"/>
+                </bean>
+                <bean class="redis.clients.jedis.HostAndPort">
+                    <constructor-arg index="0" value="${redis.cluster.hostname6}"/>
+                    <constructor-arg index="1" value="${redis.cluster.port6}"/>
+                </bean>
+            </set>
+        </constructor-arg>
+        <constructor-arg index="1" name="connectionTimeout" value="${config.redis.timeout}"/>
+        <constructor-arg index="2" name="soTimeout" value="${config.redis.timeout}"/>
+        <constructor-arg index="3" name="maxAttempts" value="${config.redis.maxAttempts}"/>
+        <constructor-arg index="4" ref="jedisPoolConfig"/>
+    </bean>
+
+</beans>
